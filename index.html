@@ -59,7 +59,13 @@
             justify-content: space-between;
             margin-top: 20px;
         }
-
+        
+       .zxc {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
         button {
             padding: 10px 20px;
             border: none;
@@ -119,9 +125,11 @@
         <div class="controls">
             <button id="prev">Предыдущий</button>
             <button id="next">Следующий</button>
-        </div>
-        <button id="finish">Завершить тест</button>
+        </div><br>
+        <div class="zxc">
+        <button id="finish">Завершить тест</button><br>
         <button id="viewIncorrectAnswers">Посмотреть неправильные ответы</button>
+        </div><br>
         <div id="result" class="result"></div>
         <div id="incorrectAnswers" class="incorrect-answers"></div>
     </div>
@@ -565,7 +573,7 @@
   {
     "question": "Определите четность, нечетность функции: ",
     "options": ["четная", "нечетная", "нечетная,ни нечетная", "нет решения", "четная, нечетная"],
-    "correct": "",
+    "correct": "четная",
     "image": "images/a18.png"
   },
   {
