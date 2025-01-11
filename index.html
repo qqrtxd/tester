@@ -7,10 +7,10 @@
     <link rel="icon" href="images/logo.ico">
     <style>
         body {
-            font-family: Arial, sans-serif;
+          font-family: Arial, sans-serif;
             margin: 20px;
             padding: 0;
-            background-image: url(images/hero.png);
+            background-color: #f4f4f9;
         }
 
         .container {
@@ -129,8 +129,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script>
-        const allQuestions  = [
-  {
+        const questions = [
+        {
     "question": "Рассчитать:",
     "options": ["0", "13", "21", "34", "45"],
     "correct": "0",
@@ -678,23 +678,6 @@
   },
         ];
 
-                // Функция для случайного выбора 20 вопросов из массива
-                function getRandomQuestions(allQuestions, numQuestions) {
-            let selectedQuestions = [];
-            let questionsCopy = [...allQuestions]; // Создаем копию массива вопросов
-
-            for (let i = 0; i < numQuestions; i++) {
-                let randomIndex = Math.floor(Math.random() * questionsCopy.length);
-                selectedQuestions.push(questionsCopy[randomIndex]);
-                questionsCopy.splice(randomIndex, 1); // Убираем выбранный вопрос из списка
-            }
-
-            return selectedQuestions;
-        }
-
-        // Получаем случайные 20 вопросов
-        const questions = getRandomQuestions(allQuestions, 20);
-
         let currentQuestion = 0;
         let userAnswers = Array(questions.length).fill(null);
         let elapsedTime = 0;
@@ -732,15 +715,6 @@
             shuffleArray(questions);
             questions.forEach(question => shuffleArray(question.options));
         }
-
-
-        // Ограничиваем вопросы до 20
-        function shuffleQuestionsAndLimit() {
-          shuffleArray(questions); // Перемешиваем все вопросы
-          questions = questions.slice(0, 20); // Берем первые 20 вопросов после перемешивания
-          questions.forEach(question => shuffleArray(question.options)); // Перемешиваем варианты ответов для каждого вопроса
-        }
-
 
         function loadQuestion() {
             const question = questions[currentQuestion];
