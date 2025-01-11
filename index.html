@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экзамены</title>
+    <link rel="icon" href="images/logo.ico">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .question {
+            font-size: 18px;
+            margin-bottom: 15px;
+            cursor: move;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .options {
+            margin-bottom: 20px;
+        }
+
+        .option {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .option:hover {
+            background-color: #f1f1f1;
+            border-color: #aaa;
+        }
+
+        .option.selected {
+            background-color: #e0f7fa;
+            border-color: #00796b;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            text-align: center;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        .incorrect-answers {
+            margin-top: 20px;
+        }
+
+        .incorrect-answer {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .incorrect-answer p {
+            margin: 5px 0;
+        }
+
+        .incorrect-answer .your-answer {
+            color: #f44336;
+        }
+
+        .incorrect-answer .correct-answer {
+            color: #4caf50;
+        }
+
+        .incorrect-answer .question-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="timer">Время: 00:00</div>
+        <div id="question" class="question"></div>
+        <div id="image"></div><br>
+        <div id="options" class="options"></div>
+      <div class="controls">
+        <button id="prev">Предыдущий</button>
+        <button id="next">Следующий</button>
+      </div>
+      <div class="zxc">
+        <button id="finish">Завершить тест</button>
+        <button id="viewIncorrectAnswers">Посмотреть неправильные ответы</button>
+      </div>
+        <div id="result" class="result"></div>
+        <div id="incorrectAnswers" class="incorrect-answers"></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        // Массив всех возможных вопросов
+        const allQuestions = [
+        {
+    "question": "Рассчитать:",
+    "options": ["0", "13", "21", "34", "45"],
+    "correct": "0",
+    "image": "images/1.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["-2а²", "-456а²", "-256а²", "-24523а²", "-45236а²"],
+    "correct": "-2а²",
+    "image": "images/2.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["sin 2x", "123", "sin 2456x", "sin 24852x", "sin 28963x"],
+    "correct": "sin 2x",
+    "image": "images/3.gif"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["cos2x", "cos24x", "sin 2456x", "Cos45322x", "tg4562x"],
+    "correct": "cos2x",
+    "image": "images/4.png"
+  },
+  {
+    "question": "Нужно решить уравнение:",
+    "options": ["0,5", "14545", "45", "456", "789"],
+    "correct": "0,5",
+    "image": "images/5.png"
+  },
+  {
+    "question": "Нужно решить уравнение:",
+    "options": ["Нет ответа", "452", "1023", "81", "452"],
+    "correct": "Нет ответа",
+    "image": "images/6.gif"
+  },
+  {
+    "question": "Нужно решить уравнение:",
+    "options": ["-∞ ∞", "1523", "852", "963", "123"],
+    "correct": "-∞ ∞",
+    "image": "images/7.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["-3", "-56", "-96", "-98", "-86"],
+    "correct": "-3",
+    "image": "images/8.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["10", "255", "454", "456", "123"],
+    "correct": "10",
+    "image": "images/9.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["0", "236", "456", "123", "145"],
+    "correct": "0",
+    "image": "images/10.gif"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["2", "123", "4568", "9674", "456"],
+    "correct": "2",
+    "image": "images/11.png"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["3", "456", "489", "4123", "56"],
+    "correct": "3",
+    "image": "images/12.png"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["2", "456", "489", "123", "4523"],
+    "correct": "2",
+    "image": "images/13.png"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["3", "478", "145", "7456", "8563"],
+    "correct": "3",
+    "image": "images/14.gif"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["4", "125", "756", "1456", "1256"],
+    "correct": "4",
+    "image": "images/15.png"
+  },
+  {
+    "question": "Нужно найти ранг матрицы:",
+    "options": ["4", "1452", "1452", "562", "4523"],
+    "correct": "4",
+    "image": "images/16.gif"
+  },
+  {
+    "question": "Нужно найти пределы:",
+    "options": ["2", "19800", "2503", "456", "123"],
+    "correct": "2",
+    "image": "images/17.gif"
+  },
+  {
+    "question": "Нужно найти пределы:",
+    "options": ["1/5", "1/852", "1/789", "1/423", "1/785"],
+    "correct": "1/5",
+    "image": "images/18.png"
+  },
+  {
+    "question": "Рассчитать:",
+    "options": ["0", "123", "456", "789", "425"],
+    "correct": "0",
+    "image": "images/19.png"
+  },
+  {
+    "question": "Исследовать ряд на сходимость, используя определение суммы ряда. Найти, если возможно, сумму ряда:",
+    "options": ["расходится, S=11/18", "сходится, S=123", "сходится, S=45", "сходится, S=145", "сходится, S=246"],
+    "correct": "расходится, S=11/18",
+    "image": "images/20.png"
+  },
+  {
+    "question": "Установить, сходится ли ряд, используя необходимый признак сходимости ряда:",
+    "options": ["расходится", "Сходится", "нет ответа", "Сходится условно", "Сходится абсолютно"],
+    "correct": "расходится",
+    "image": "images/21.png"
+  },
+  {
+    "question": "Установить, сходится ли ряд:",
+    "options": ["расходится", "Сходится", "нет ответа", "Сходится условно", "Сходится абсолютно"],
+    "correct": "расходится",
+    "image": "images/22.png"
+  },
+  {
+    "question": "Установить, сходится ли ряд:",
+    "options": ["расходится", "Сходится", "нет ответа", "Сходится условно", "Сходится абсолютно"],
+    "correct": "расходится",
+    "image": "images/23.gif"
+  },
+  {
+    "question": "Установить, сходится ли ряд:",
+    "options": ["расходится", "Сходится", "нет ответа", "Сходится условно", "Сходится абсолютно"],
+    "correct": "расходится",
+    "image": "images/24.png"
+  },
+  {
+    "question": "Используя разложение подынтегральной функции в степенной ряд, вычислить указанный определенный интеграл с точностью до 0,0001:",
+    "options": ["0,0043", "230", "456", "753", "786"],
+    "correct": "0,0043",
+    "image": "images/25.gif"
+  },
+  {
+    "question": "Какой из следующих параметров описывает среднее значение выборки?:",
+    "options": ["Среднее арифметическое", "Медиана", "Мода ", "Дисперсия", "Стандартное отклонение"],
+    "correct": "Среднее арифметическое",
+    "image": ""
+  },
+  {
+    "question": "Какой из показателей используется для измерения разброса данных?:",
+    "options": ["Дисперсия ", "Среднее", "Мода", "Медиана", "Процентиль"],
+    "correct": "Дисперсия ",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов позволяет оценить вероятностное распределение выборки?",
+    "options": ["Эмпирическая функция распределения", "Гистограмма", "Классическая статистика", "Моделирование", "Интервальное оценивание"],
+    "correct": "Эмпирическая функция распределения",
+    "image": ""
+  },
+  {
+    "question": "Какое значение имеет коэффициент корреляции Пирсона для независимых переменных?",
+    "options": ["0", "1", "-1", "0.5", "Неопределено"],
+    "correct": "0",
+    "image": ""
+  },
+  {
+    "question": "Какой из следующих тестов используется для проверки гипотезы о равенстве двух средних?",
+    "options": ["t-тест", "χ²-тест", "Z-тест", "F-тест", "U-тест Манна-Уитни"],
+    "correct": "t-тест",
+    "image": ""
+  },
+  {
+    "question": "Как называется область, в которой мы можем найти истинное значение параметра с заданной вероятностью?",
+    "options": ["Доверительный интервал", "Выборка", "Гипотеза", "Модель", "Оценка"],
+    "correct": "Доверительный интервал",
+    "image": ""
+  },
+  {
+    "question": "Что такое центральная предельная теорема?",
+    "options": ["Сумма большого количества независимых случайных величин распределена нормально", "Все случайные величины имеют одинаковое распределение", "Медиана является надежным показателем", "Дисперсия всегда положительна", "Статистические методы не имеют смысла"],
+    "correct": "Сумма большого количества независимых случайных величин распределена нормально",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов используется для оценки параметров нормального распределения?",
+    "options": ["Метод максимального правдоподобия", "Непараметрические методы", "Регрессионный анализ", "Кластерный анализ", "Факторный анализ"],
+    "correct": "Метод максимального правдоподобия",
+    "image": ""
+  },
+  {
+    "question": "Какой из вариантов описывает стандартное отклонение?",
+    "options": ["Квадратный корень из дисперсии", "Среднее значение", "Разница между максимумом и минимумом", "Мера центральной тенденции", "Вероятностная функция"],
+    "correct": "Квадратный корень из дисперсии",
+    "image": ""
+  },
+  {
+    "question": "Что такое p-значение в тестировании гипотез?",
+    "options": ["Вероятность получения наблюдаемого результата при истинности нулевой гипотезы", "Разница между средними значениями", "Статистическая ошибка", "Уровень значимости", "Объем выборки"],
+    "correct": "Вероятность получения наблюдаемого результата при истинности нулевой гипотезы",
+    "image": ""
+  },
+  {
+    "question": "Как называется ошибка первого рода?",
+    "options": ["Отклонение нулевой гипотезы, когда она верна", "Отклонение альтернативной гипотезы", "Ошибка в оценке дисперсии", "Неверная интерпретация данных", "Ошибка в сборе данных"],
+    "correct": "Отклонение нулевой гипотезы, когда она верна",
+    "image": ""
+  },
+  {
+    "question": "Какой из следующих методов используется для анализа временных рядов?",
+    "options": ["Автокорреляция", "Регрессионный анализ", "Кластерный анализ", "Моделирование", "Дискриминантный анализ"],
+    "correct": "Автокорреляция",
+    "image": ""
+  },
+  {
+    "question": "Какой из показателей используется для описания асимметрии распределения?",
+    "options": ["Коэффициент асимметрии", "Дисперсия", "Мода", "Медиана", "Стандартное отклонение"],
+    "correct": "Коэффициент асимметрии",
+    "image": ""
+  },
+  {
+    "question": "Какой из тестов используется для проверки гипотезы о равенстве дисперсий?",
+    "options": ["F-тест", "t-тест", "χ²-тест", "Z-тест", "U-тест Манна-Уитни"],
+    "correct": "F-тест",
+    "image": ""
+  },
+  {
+    "question": "Какой из следующих терминов обозначает случайное распределение вероятностей?",
+    "options": ["Вероятностное пространство", "Выборка", "Дискретное распределение", "Непрерывное распределение", "Статистическая гипотеза"],
+    "correct": "Вероятностное пространство",
+    "image": ""
+  },
+  {
+    "question": "Что такое мощность теста?",
+    "options": ["Вероятность отклонения нулевой гипотезы, когда она ложна", "Размер выборки", "Степень свободы", "Уровень значимости", "Вероятность ошибки первого рода"],
+    "correct": "Вероятность отклонения нулевой гипотезы, когда она ложна",
+    "image": ""
+  },
+  {
+    "question": "Какой из следующих графиков используется для визуализации распределения данных?",
+    "options": ["Гистограмма", "Линейный график", "Круговая диаграмма", "Scatter plot", "Диаграмма размаха"],
+    "correct": "Гистограмма",
+    "image": ""
+  },
+  {
+    "question": "Как называется значение, ниже которого лежит 25% данных?",
+    "options": ["Первый квартиль", "Медиана", "Третий квартиль", "Мода", "Дисперсия"],
+    "correct": "Первый квартиль",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов применяется для проверки нормальности распределения?",
+    "options": ["Тест Шапиро-Уилка", "t-тест", "F-тест", "χ²-тест", "U-тест Манна-Уитни"],
+    "correct": "Тест Шапиро-Уилка",
+    "image": ""
+  },
+  {
+    "question": "Какой из показателей является мерой вариации?",
+    "options": ["Стандартное отклонение", "Медиана", "Мода", "Сумма", "Квартильный размах"],
+    "correct": "Стандартное отклонение",
+    "image": ""
+  },
+  {
+    "question": "Какой метод используется для определения взаимосвязи между двумя переменными?",
+    "options": ["Корреляционный анализ", "Дискриминантный анализ", "Факторный анализ", "Кластерный анализ", "Регрессионный анализ"],
+    "correct": "Корреляционный анализ",
+    "image": ""
+  },
+  {
+    "question": "Что такое байесовский подход в статистике?",
+    "options": ["Подход, основанный на теореме Байеса", "Метод максимального правдоподобия", "Непараметрические методы", "Дисперсионный анализ", "Группировка данных"],
+    "correct": "Подход, основанный на теореме Байеса",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов позволяет оценить эффект независимой переменной на зависимую?",
+    "options": ["Регрессионный анализ", "Дискриминантный анализ", "Кластерный анализ", "Факторный анализ", "Корреляционный анализ"],
+    "correct": "Регрессионный анализ",
+    "image": ""
+  },
+  {
+    "question": "Какое распределение используется для описания времени до наступления события?",
+    "options": ["Экспоненциальное распределение", "Нормальное распределение", "Биномиальное распределение", "Пуассоновское распределение", "Геометрическое распределение"],
+    "correct": "Экспоненциальное распределение",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов используется для оценки влияния нескольких факторов на результат?",
+    "options": ["Многофакторный дисперсионный анализ", "t-тест", "Регрессионный анализ", "Корреляционный анализ", "Факторный анализ"],
+    "correct": "Многофакторный дисперсионный анализ",
+    "image": ""
+  },
+  {
+    "question": "Какой из параметров описывает степень изменчивости данных?",
+    "options": ["Дисперсия", "Медиана", "Мода", "Стандартное отклонение", "Процентиль"],
+    "correct": "Дисперсия",
+    "image": ""
+  },
+  {
+    "question": "Какой из тестов используется для анализа зависимостей между категориальными переменными?",
+    "options": ["χ²-тест", "t-тест", "F-тест", "Z-тест", "U-тест Манна-Уитни"],
+    "correct": "χ²-тест",
+    "image": ""
+  },
+  {
+    "question": "Какой из параметров используется для описания среднего значения в распределении с выбросами?",
+    "options": ["Медиана", "Среднее арифметическое", "Мода", "Дисперсия", "Стандартное отклонение"],
+    "correct": "Медиана",
+    "image": ""
+  },
+  {
+    "question": "Какой из методов позволяет сравнивать более двух групп?",
+    "options": ["ANOVA (дисперсионный анализ)", "t-тест", "Z-тест", "U-тест Манна-Уитни", "Регрессионный анализ"],
+    "correct": "ANOVA (дисперсионный анализ)",
+    "image": ""
+  },
+  {
+    "question": "Какой из показателей используется для оценки качества регрессионной модели?",
+    "options": ["Коэффициент детерминации (R²)", "U-тест Манна-Уитни", "Медиана", "Анализ данных", "Факторный анализ"],
+    "correct": "Коэффициент детерминации (R²)",
+    "image": ""
+  },
+  {
+    "question": "",
+    "options": ["images/b1.png", "images/b2.png", "images/b3.png", "images/b5.png", "images/b6.png"],
+    "correct": "images/b1.png",
+    "image": "images/a1.png"
+  },
+  {
+    "question": "",
+    "options": ["images/b2.png", "images/b1.png", "images/b3.png", "images/b5.png", "images/b6.png"],
+    "correct": "images/b2.png",
+    "image": "images/a2.png"
+  },
+  {
+    "question": "",
+    "options": ["images/b3.png", "images/b5.png", "images/b2.png", "images/b1.png", "images/b6.png"],
+    "correct": "images/b3.png",
+    "image": "images/a3.png"
+  },
+  {
+    "question": "",
+    "options": ["images/b2.png", "images/b3.png", "images/b5.png", "images/b2.png", "images/b6.png"],
+    "correct": "images/b2.png",
+    "image": "images/a4.png"
+  },
+  {
+    "question": "",
+    "options": ["images/b5.png", "images/b6.png", "images/b1.png", "images/b3.png", "images/b2.png"],
+    "correct": "images/b5.png",
+    "image": "images/a5.png"
+  },
+  {
+    "question": "",
+    "options": ["images/b6.png", "images/b2.png", "images/b3.png", "images/b1.png", "images/b5.png"],
+    "correct": "images/b6.png",
+    "image": "images/a6.png"
+  },
+  {
+    "question": "Решите уравнение: ",
+    "options": ["Нет решения", "images/g3.png", "images/g2.png", "images/g1.png", "images/g4.png"],
+    "correct": "Нет решения",
+    "image": "images/a7.png"
+  },
+  {
+    "question": "Решите уравнение: ",
+    "options": ["images/g1.png", "images/g2.png", "Нет решения", "images/g3.png", "images/g4.png"],
+    "correct": "images/g1.png",
+    "image": "images/a8.png"
+  },
+  {
+    "question": "Решите уравнение: ",
+    "options": ["images/f1.png", "images/f2.png", "images/f3.png", "images/f4.png", "images/f5.png"],
+    "correct": "images/f1.png",
+    "image": "images/a9.png"
+  },
+  {
+    "question": "Решите уравнение: ",
+    "options": ["Нет решения", "images/z1.png", "images/z2.png", "images/z3.png", "images/z4.png"],
+    "correct": "Нет решения",
+    "image": "images/a10.png"
+  },
+  {
+    "question": "Найдите период функции: ",
+    "options": ["2𝝅", "𝝅", "-𝝅", "-2𝝅", "4"],
+    "correct": "2𝝅",
+    "image": "images/a11.png"
+  },
+  {
+    "question": "Найдите период функции: ",
+    "options": ["2𝝅", "𝝅", "-2𝝅", "8", "-𝝅"],
+    "correct": "2𝝅",
+    "image": "images/a12.png"
+  },
+  {
+    "question": "Найдите наименьший период функции: ",
+    "options": ["images/v5.png", "1", "images/v4.png", "C", "images/v6.png"],
+    "correct": "images/v5.png",
+    "image": "images/a13.png"
+  },
+  {
+    "question": "Вычислите интеграл: ",
+    "options": ["images/v4.png", "images/v3.png", "images/v2.png", "1", "0"],
+    "correct": "images/v4.png",
+    "image": "images/a14.png"
+  },
+  {
+    "question": "Вычислите площадь фигуры,ограниченной линиями : ",
+    "options": ["images/v1.png", "images/v2.png", "images/v3.png", "2", "1"],
+    "correct": "images/v1.png",
+    "image": "images/a15.png"
+  },
+  {
+    "question": "Вычислите площадь фигуры,ограниченной линиями: ",
+    "options": ["images/x1.png", "images/x2.png", "1,5", "0", "1"],
+    "correct": "images/x1.png",
+    "image": "images/a16.png"
+  },
+  {
+    "question": "Определите четность, нечетность функции: ",
+    "options": ["нечетная,ни нечетная", "четная", "нечетная", "нет решения", "четная, нечетная "],
+    "correct": "нечетная,ни нечетная",
+    "image": "images/a17.png"
+  },
+  {
+    "question": "Определите четность, нечетность функции: ",
+    "options": ["четная", "нечетная", "нечетная,ни нечетная", "нет решения", "четная, нечетная"],
+    "correct": "",
+    "image": "images/a18.png"
+  },
+  {
+    "question": "Единичная матрица получается при умножении...",
+    "options": ["Обратных матриц", "Симметричных матриц", "Единичных матриц", "Транспонированных матриц", "Квадратных матриц"],
+    "correct": "Обратных матриц",
+    "image": ""
+  },
+  {
+    "question": "Как называется A⁻¹?",
+    "options": ["обратная", "симметричная", "единичная", "транспонированная", "диагональная"],
+    "correct": "обратная",
+    "image": ""
+  },
+    {
+    "question": "Вычислите ",
+    "options": ["images/c1.png", "images/c2.png", "images/c3.png", "images/c4.png", "images/c5.png"],
+    "correct": "images/c1.png",
+    "image": "images/a21.png"
+  },
+  {
+    "question": "Aᵀ какая матрица?",
+    "options": ["транспонированная", "диагональная", "единичная", "симметричная", "параллельная"],
+    "correct": "транспонированная",
+    "image": ""
+  },
+  {
+    "question": "У квадратной матрицы…",
+    "options": ["m=n", "m≠n", "m<n", "m>n", "m<n+5"],
+    "correct": "m=n",
+    "image": ""
+  },
+  {
+    "question": "Вектор- это…",
+    "options": ["направленный отрезок", "луч", "прямая", "плоскость", "окружность"],
+    "correct": "направленный отрезок",
+    "image": ""
+  },
+  {
+    "question": "Найдите длину вектора  а=(3; 4; 0)",
+    "options": ["5", "25", "0", "1", "7"],
+    "correct": "5",
+    "image": ""
+  },
+  {
+    "question": "Найдите скалярное произведение ,если а= (1; 2; 3), в= (1;-6; -1)",
+    "options": ["-14", "0", "-6", "14", "-12"],
+    "correct": "-14",
+    "image": ""
+  },
+  {
+    "question": "Найдите координаты вектора -3а , если  а=(1; -1; 2)",
+    "options": ["-3а=(-3; 3; -6)", "1", "3", "-3а=(3; -3; 6)", "0"],
+    "correct": "-3а=(-3; 3; -6)",
+    "image": ""
+  },
+  {
+    "question": "Чему равен угловой коэффициент У=2х+3 ",
+    "options": ["2", "3", "5", "0", "-1"],
+    "correct": "2",
+    "image": ""
+  },
+  {
+    "question": "Общее уравнение прямой ",
+    "options": ["Ах+Ву+С=0", "у=кх+в", "у-у₀=к(х-х₀)", "х=у", "к₁=к₂"],
+    "correct": "Ах+Ву+С=0",
+    "image": ""
+  },
+  {
+    "question": "3х+5у=15  решите уравнение при(5;у)",
+    "options": ["0", "7", "6", "5", "4"],
+    "correct": "0",
+    "image": ""
+  },
+  {
+    "question": "7х+2у=14   решите уравнение при (х;7)",
+    "options": ["0", "2", "8", "9", "1"],
+    "correct": "0",
+    "image": ""
+  },
+  {
+    "question": "Найдите область определения функции ",
+    "options": ["[3; + ∞)", "(3; + ∞)", "[-3; + ∞)", "(-∞; 3)", "(-∞; -3)"],
+    "correct": "[3; + ∞)",
+    "image": "images/a32.png"
+  },
+  {
+    "question": "Независимой переменной функции является..",
+    "options": ["аргумент", "значение", "ордината", "величина", "параметр"],
+    "correct": "аргумент",
+    "image": ""
+  },
+  {
+    "question": "Областью определения целой рациональной функции являются",
+    "options": ["Все действительные числа", "Числа, не равные 0", "Положительные числа", "Отрицательные числа", "Дробные числа"],
+    "correct": "Все действительные числа",
+    "image": ""
+  },
+  {
+    "question": "Сколько способов задания функции?",
+    "options": ["3", "4", "2", "5", "1"],
+    "correct": "3",
+    "image": ""
+  },
+  {
+    "question": "Область определения функции фото равна",
+    "options": ["(-∞; 2,5]", "(2,5; + ∞)", "(-∞; 2.5)", "[2,5; + ∞)", "(-∞; 25]"],
+    "correct": "(-∞; 2,5]",
+    "image": "images/a36.png"
+  },
+];
+
+        // Функция для случайного выбора 20 вопросов из массива
+        function getRandomQuestions(allQuestions) {
+            let selectedQuestions = [];
+            let questionsCopy = [...allQuestions]; // Создаем копию массива вопросов
+
+            for (let i = 0; i < numQuestions; i++) {
+                let randomIndex = Math.floor(Math.random() * questionsCopy.length);
+                selectedQuestions.push(questionsCopy[randomIndex]);
+                questionsCopy.splice(randomIndex, 1); // Убираем выбранный вопрос из списка
+            }
+
+            return selectedQuestions;
+        }
+
+        const questions = allQuestions; 
+
+
+        let currentQuestion = 0;
+        let userAnswers = Array(questions.length).fill(null);
+        let elapsedTime = 0;
+        let timer;
+
+        const timerElement = document.getElementById('timer');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const imageElement = document.getElementById('image');
+        const prevButton = document.getElementById('prev');
+        const nextButton = document.getElementById('next');
+        const finishButton = document.getElementById('finish');
+        const resultElement = document.getElementById('result');
+        const viewIncorrectAnswersButton = document.getElementById('viewIncorrectAnswers');
+        const incorrectAnswersElement = document.getElementById('incorrectAnswers');
+
+        function startTimer() {
+            timer = setInterval(() => {
+                elapsedTime++;
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                timerElement.textContent = `Время: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Функция для случайного перемешивания массива
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Меняем местами элементы
+            }
+        }
+
+    function loadQuestion() {
+    const question = questions[currentQuestion];
+    questionElement.textContent = `Вопрос ${currentQuestion + 1}: ${question.question}`;
+
+    if (question.image) {
+        imageElement.innerHTML = `<img src="${question.image}" alt="Вопрос" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">`;
+    } else {
+        imageElement.innerHTML = "";
+    }
+
+    optionsElement.innerHTML = "";
+    if (!question.hasBeenShuffled) {
+        shuffleArray(question.options); // Перемешиваем варианты ответа
+        question.hasBeenShuffled = true; // Помечаем, что вопросы были перемешаны
+    }
+
+    question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option';
+
+        // Проверяем, является ли вариант ответом с изображением
+        if (option.includes('.png') || option.includes('.jpg') || option.includes('.jpeg') || option.includes('.gif')) {
+            optionDiv.innerHTML = `<img src="${option}" alt="Option" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+        } else {
+            optionDiv.textContent = option; // Если это текст, оставляем как есть
+        }
+
+        optionDiv.onclick = () => selectOption(index);
+
+        if (userAnswers[currentQuestion] === index) {
+            optionDiv.classList.add('selected');
+        }
+
+        optionsElement.appendChild(optionDiv);
+    });
+
+    prevButton.disabled = currentQuestion === 0;
+    nextButton.disabled = currentQuestion === questions.length - 1;
+}
+        function selectOption(index) {
+            userAnswers[currentQuestion] = index;
+            loadQuestion();
+        }
+
+        function finishTest() {
+            clearInterval(timer);
+
+            const correctCount = questions.reduce((count, question, index) => {
+                return count + (question.options[userAnswers[index]] === question.correct ? 1 : 0);
+            }, 0);
+
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            
+            // Создаем диаграмму
+            const canvas = document.createElement('canvas');
+            resultElement.innerHTML = `<p>Правильных ответов: ${correctCount} из ${questions.length} (${percentage}%)</p>`;
+            resultElement.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Правильные', 'Неправильные'],
+                    datasets: [{
+                        data: [correctCount, questions.length - correctCount],
+                        backgroundColor: ['#4caf50', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        datalabels: {
+                            display: true,
+                            formatter: (value) => {
+                                const percentage = Math.round((value / questions.length) * 100);
+                                return `${percentage}%`;
+                            },
+                            color: 'black'
+                        }
+                    }
+                }
+            });
+
+            viewIncorrectAnswersButton.style.display = 'block'; // Показываем кнопку для просмотра неправильных ответов
+        }
+
+        function viewIncorrectAnswers() {
+    incorrectAnswersElement.innerHTML = ""; // Очистка предыдущих данных
+
+    questions.forEach((question, index) => {
+        const userAnswer = question.options[userAnswers[index]];
+        const correctAnswer = question.correct;
+
+        if (userAnswer !== correctAnswer) {
+            const incorrectDiv = document.createElement("div");
+            incorrectDiv.className = "incorrect-answer";
+
+            // Добавляем текст вопроса (если он есть)
+            if (question.question) {
+                incorrectDiv.innerHTML += `<p class="question-text">${question.question}</p>`;
+            }
+
+            // Добавляем изображение вопроса (если оно есть)
+            if (question.image) {
+                incorrectDiv.innerHTML += `<img src="${question.image}" alt="Вопрос" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin: 10px 0;">`;
+            }
+            
+            // Отображаем ответ пользователя
+            if (userAnswer) {
+                if (userAnswer.includes(".png") || userAnswer.includes(".jpg") || userAnswer.includes(".jpeg")) {
+                    incorrectDiv.innerHTML += `<p class="your-answer">Ваш ответ: <img src="${userAnswer}" alt="Ваш ответ" style="max-width: 100px; height: auto; border-radius: 8px;"></p>`;
+                } else {
+                    incorrectDiv.innerHTML += `<p class="your-answer">Ваш ответ: ${userAnswer}</p>`;
+                }
+            } else {
+                incorrectDiv.innerHTML += `<p class="your-answer">Ваш ответ: Не выбран</p>`;
+            }
+
+            // Отображаем правильный ответ
+            if (correctAnswer.includes(".png") || correctAnswer.includes(".jpg") || correctAnswer.includes(".jpeg")) {
+                incorrectDiv.innerHTML += `<p class="correct-answer">Правильный ответ: <img src="${correctAnswer}" alt="Правильный ответ" style="max-width: 100px; height: auto; border-radius: 8px;"></p>`;
+            } else {
+                incorrectDiv.innerHTML += `<p class="correct-answer">Правильный ответ: ${correctAnswer}</p>`;
+            }
+
+            incorrectAnswersElement.appendChild(incorrectDiv);
+        }
+    });
+
+    if (incorrectAnswersElement.innerHTML === "") {
+        incorrectAnswersElement.innerHTML = "<p>Все ответы правильные!</p>";
+    }
+}
+
+// Добавляем обработчик события на кнопку "Посмотреть неправильные ответы"
+viewIncorrectAnswersButton.onclick = viewIncorrectAnswers;
+
+
+        prevButton.onclick = () => {
+            currentQuestion--;
+            loadQuestion();
+        };
+
+        nextButton.onclick = () => {
+            currentQuestion++;
+            loadQuestion();
+        };
+
+        finishButton.onclick = finishTest;
+        viewIncorrectAnswersButton.onclick = viewIncorrectAnswers;
+
+        startTimer();
+        loadQuestion();
+    </script>
+</body>
+</html>
