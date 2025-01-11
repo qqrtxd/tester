@@ -10,7 +10,8 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 0;
-            background-color: #f4f4f9;
+            background-image: url(images/hero.png);
+            background-size: cover;
         }
 
         .container {
@@ -59,13 +60,7 @@
             justify-content: space-between;
             margin-top: 20px;
         }
-        
-       .zxc {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        
+
         button {
             padding: 10px 20px;
             border: none;
@@ -125,11 +120,9 @@
         <div class="controls">
             <button id="prev">Предыдущий</button>
             <button id="next">Следующий</button>
-        </div><br>
-        <div class="zxc">
-        <button id="finish">Завершить тест</button><br>
+        </div>
+        <button id="finish">Завершить тест</button>
         <button id="viewIncorrectAnswers">Посмотреть неправильные ответы</button>
-        </div><br>
         <div id="result" class="result"></div>
         <div id="incorrectAnswers" class="incorrect-answers"></div>
     </div>
@@ -137,8 +130,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script>
-        const questions = [
-        {
+        const allQuestions  = [
+  {
     "question": "Рассчитать:",
     "options": ["0", "13", "21", "34", "45"],
     "correct": "0",
@@ -488,8 +481,8 @@
   },
   {
     "question": "",
-    "options": ["images/b2.png", "images/b3.png", "images/b5.png", "images/b2.png", "images/b6.png"],
-    "correct": "images/b2.png",
+    "options": ["images/b4.png", "images/b3.png", "images/b5.png", "images/b2.png", "images/b6.png"],
+    "correct": "images/b4.png",
     "image": "images/a4.png"
   },
   {
@@ -686,6 +679,23 @@
   },
         ];
 
+                // Функция для случайного выбора 20 вопросов из массива
+                function getRandomQuestions(allQuestions, numQuestions) {
+            let selectedQuestions = [];
+            let questionsCopy = [...allQuestions]; // Создаем копию массива вопросов
+
+            for (let i = 0; i < numQuestions; i++) {
+                let randomIndex = Math.floor(Math.random() * questionsCopy.length);
+                selectedQuestions.push(questionsCopy[randomIndex]);
+                questionsCopy.splice(randomIndex, 1); // Убираем выбранный вопрос из списка
+            }
+
+            return selectedQuestions;
+        }
+
+        // Получаем случайные 20 вопросов
+        const questions = getRandomQuestions(allQuestions, 20);
+
         let currentQuestion = 0;
         let userAnswers = Array(questions.length).fill(null);
         let elapsedTime = 0;
@@ -723,6 +733,15 @@
             shuffleArray(questions);
             questions.forEach(question => shuffleArray(question.options));
         }
+
+
+        // Ограничиваем вопросы до 20
+        function shuffleQuestionsAndLimit() {
+          shuffleArray(questions); // Перемешиваем все вопросы
+          questions = questions.slice(0, 20); // Берем первые 20 вопросов после перемешивания
+          questions.forEach(question => shuffleArray(question.options)); // Перемешиваем варианты ответов для каждого вопроса
+        }
+
 
         function loadQuestion() {
             const question = questions[currentQuestion];
@@ -809,23 +828,59 @@
             viewIncorrectAnswersButton.style.display = 'block'; // Показываем кнопку для просмотра неправильных ответов
         }
 
-        // Функция для отображения неправильных ответов
         function viewIncorrectAnswers() {
-            incorrectAnswersElement.innerHTML = ''; // Очищаем предыдущий список
+    if (!incorrectAnswersElement) {
+        console.error("Элемент 'incorrectAnswersElement' не найден.");
+        return;
+    }
 
-            questions.forEach((question, index) => {
-                if (question.options[userAnswers[index]] !== question.correct) {
-                    const incorrectDiv = document.createElement('div');
-                    incorrectDiv.className = 'incorrect-answer';
-                    incorrectDiv.innerHTML = `
-                        <p class="question-text">Вопрос ${index + 1}: ${question.question}</p>
-                        <p><strong class="your-answer">Ваш ответ:</strong> ${question.options[userAnswers[index]]}</p>
-                        <p><strong class="correct-answer">Правильный ответ:</strong> ${question.correct}</p>
-                    `;
-                    incorrectAnswersElement.appendChild(incorrectDiv);
-                }
-            });
+    incorrectAnswersElement.innerHTML = ''; // Очищаем предыдущий список
+
+    questions.forEach((question, index) => {
+        if (question.options[userAnswers[index]] !== question.correct) {
+            const incorrectDiv = document.createElement('div');
+            incorrectDiv.className = 'incorrect-answer';
+
+            // Проверяем наличие изображения для вопроса
+            let questionImageHTML = '';
+            if (question.image) {
+                questionImageHTML = `<img src="${question.image}" alt="Вопрос" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">`;
+            }
+
+            // Форматируем выбранный пользователем ответ
+            let userAnswerHTML = '';
+            const userAnswer = question.options[userAnswers[index]];
+            if (userAnswer && (userAnswer.includes('.jpg') || userAnswer.includes('.png') || userAnswer.includes('.jpeg'))) {
+                userAnswerHTML = `<img src="${userAnswer}" alt="Ваш ответ" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+            } else {
+                userAnswerHTML = userAnswer || 'Ответ не выбран';
+            }
+
+            // Форматируем правильный ответ
+            let correctAnswerHTML = '';
+            if (question.correct && (question.correct.includes('.jpg') || question.correct.includes('.png') || question.correct.includes('.jpeg'))) {
+                correctAnswerHTML = `<img src="${question.correct}" alt="Правильный ответ" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+            } else {
+                correctAnswerHTML = question.correct;
+            }
+
+            // Заполняем содержимое блока неправильного ответа
+            incorrectDiv.innerHTML = `
+                <p class="question-text">Вопрос ${index + 1}: ${question.question}</p>
+                ${questionImageHTML}
+                <p><strong class="your-answer">Ваш ответ:</strong> ${userAnswerHTML}</p>
+                <p><strong class="correct-answer">Правильный ответ:</strong> ${correctAnswerHTML}</p>
+            `;
+
+            incorrectAnswersElement.appendChild(incorrectDiv);
         }
+    });
+
+      if (incorrectAnswersElement.innerHTML === '') {
+          incorrectAnswersElement.innerHTML = '<p>Все ответы правильные!</p>';
+      }
+  }
+
 
         prevButton.onclick = () => {
             currentQuestion--;
